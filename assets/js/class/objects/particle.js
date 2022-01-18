@@ -1,17 +1,9 @@
 import * as THREE from '../../lib/three.module.js'
 
 export default class{
-    constructor({count, posVelocity, lifeVelocity, materialOpt}){
+    constructor({count, lifeVelocity, materialOpt}){
         this.count = count
         this.materialOpt = materialOpt
-
-        if(posVelocity){
-            this.posVelocity = Array.from({length: count}, () => ({
-                x: Math.random() * 1 - 0.5,
-                y: Math.random() * posVelocity.y,
-                z: Math.random() * 1 - 0.5
-            }))
-        }
 
         if(lifeVelocity){
             this.lifeVelocity = Array.from({length: count}, () => Math.random() * (lifeVelocity.max - lifeVelocity.min) + (lifeVelocity.min))

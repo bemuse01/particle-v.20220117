@@ -25,7 +25,7 @@ export default class{
 
     // create
     create(group){
-        this.object = new Particle({count: this.param.count, posVelocity: {x: 0, y: 1, z: 0}, lifeVelocity: {min: 0.01, max: 0.03}, materialOpt: {
+        this.object = new Particle({count: this.param.count, lifeVelocity: {min: 0.01, max: 0.05}, materialOpt: {
             vertexShader: Shader.vertex,
             fragmentShader: Shader.fragment,
             transparent: true,
@@ -44,7 +44,7 @@ export default class{
 
     // animate
     animate(){
-        const {posVelocity, lifeVelocity, life} = this.object
+        const {lifeVelocity} = this.object
         const position = this.object.getAttribute('position')
         const opacity = this.object.getAttribute('aOpacity')
         const positionArr = position.array
@@ -55,9 +55,6 @@ export default class{
 
         for(let i = 0; i < this.param.count; i++){
             const idx = i * 3
-
-            const ox = positionArr[idx]
-            const oz = positionArr[idx + 2]
 
             opacityArr[i] -= lifeVelocity[i]
 
@@ -70,7 +67,6 @@ export default class{
             const nz = n3 * 0.5
 
             positionArr[idx] += nx
-            // positionArr[idx + 1] += posVelocity[i].y
             positionArr[idx + 1] += ny
             positionArr[idx + 2] += nz
 
