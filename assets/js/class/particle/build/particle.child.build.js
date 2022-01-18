@@ -6,7 +6,7 @@ import PublicMethod from '../../../method/method.js'
 export default class{
     constructor({group}){
         this.param = {
-            count: 20000,
+            count: 10000,
             div: 0.2,
             color: 0xffffff,
             opacity: 1,
