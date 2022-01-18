@@ -7,9 +7,9 @@ export default class{
 
         if(posVelocity){
             this.posVelocity = Array.from({length: count}, () => ({
-                x: Math.random() * posVelocity.x,
+                x: Math.random() * 1 - 0.5,
                 y: Math.random() * posVelocity.y,
-                z: Math.random() * posVelocity.z
+                z: Math.random() * 1 - 0.5
             }))
         }
 

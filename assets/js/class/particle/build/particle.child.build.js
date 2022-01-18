@@ -6,7 +6,7 @@ import PublicMethod from '../../../method/method.js'
 export default class{
     constructor({group}){
         this.param = {
-            count: 10000,
+            count: 20000,
             div: 0.2,
             color: 0xffffff,
             opacity: 1,
@@ -25,7 +25,7 @@ export default class{
 
     // create
     create(group){
-        this.object = new Particle({count: this.param.count, posVelocity: {x: 0, y: 1, z: 0}, lifeVelocity: {min: 0.01, max: 0.02}, materialOpt: {
+        this.object = new Particle({count: this.param.count, posVelocity: {x: 0, y: 1, z: 0}, lifeVelocity: {min: 0.01, max: 0.03}, materialOpt: {
             vertexShader: Shader.vertex,
             fragmentShader: Shader.fragment,
             transparent: true,
@@ -65,9 +65,9 @@ export default class{
             const n2 = SIMPLEX.noise2D(i % div * 0.002, time * 0.0005)
             const n3 = SIMPLEX.noise2D(i % div * 0.003, time * 0.0005)
 
-            const nx = n1
+            const nx = n1 * 0.5
             const ny = PublicMethod.normalize(n2, 0, 1, -1, 1)
-            const nz = n3
+            const nz = n3 * 0.5
 
             positionArr[idx] += nx
             // positionArr[idx + 1] += posVelocity[i].y
