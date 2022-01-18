@@ -7,10 +7,11 @@ export default class{
     constructor({group}){
         this.param = {
             count: 10000,
-            div: 0.2,
+            div: 0.1,
             color: 0xffffff,
             opacity: 1,
-            size: 1
+            size: 1,
+            rd: 0.5
         }
 
         this.init(group)
@@ -62,9 +63,9 @@ export default class{
             const n2 = SIMPLEX.noise2D(i % div * 0.002, time * 0.0005)
             const n3 = SIMPLEX.noise2D(i % div * 0.003, time * 0.0005)
 
-            const nx = n1 * 0.5
+            const nx = n1 * this.param.rd
             const ny = PublicMethod.normalize(n2, 0, 1, -1, 1)
-            const nz = n3 * 0.5
+            const nz = n3 * this.param.rd
 
             positionArr[idx] += nx
             positionArr[idx + 1] += ny
