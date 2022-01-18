@@ -69,6 +69,7 @@ export default class{
             const ny = PublicMethod.normalize(n2, 0, 1, -1, 1)
             const nz = n3 * this.param.rd
             const no = PublicMethod.normalize(n4, 0, 0.05, -1, 1)
+            // const no = lifeVelocity[i]
 
             positionArr[idx] += nx
             positionArr[idx + 1] += ny
