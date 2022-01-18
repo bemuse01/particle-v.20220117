@@ -16,11 +16,12 @@ export default {
     `,
     fragment: `
         uniform vec3 uColor;
+        uniform float uOpacity;
 
         varying float vOpacity;
 
         void main(){
-            gl_FragColor = vec4(uColor, vOpacity);
+            gl_FragColor = vec4(uColor, vOpacity * uOpacity);
         }
     `
 }

@@ -33,11 +33,12 @@ export default class{
             blending: THREE.AdditiveBlending,
             uniforms: {
                 uColor: {value: new THREE.Color(this.param.color)},
-                uSize: {value: this.param.size}
+                uSize: {value: this.param.size},
+                uOpacity: {value: this.param.opacity}
             }
         }})
 
-        this.object.setAttribute('aOpacity', new Float32Array(Array.from({length: this.param.count}, () => this.param.opacity)), 1)
+        this.object.setAttribute('aOpacity', new Float32Array(Array.from({length: this.param.count}, () => 1)), 1)
 
         group.add(this.object.get())
     }
@@ -45,7 +46,7 @@ export default class{
 
     // animate
     animate(){
-        const {lifeVelocity} = this.object
+        // const {lifeVelocity} = this.object
         const position = this.object.getAttribute('position')
         const opacity = this.object.getAttribute('aOpacity')
         const positionArr = position.array
