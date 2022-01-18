@@ -1,14 +1,16 @@
 import * as THREE from '../../../lib/three.module.js'
 import Particle from '../../objects/particle.js'
 import Shader from '../shader/particle.child.shader.js'
+import PublicMethod from '../../../method/method.js'
 
 export default class{
     constructor({group}){
         this.param = {
-            count: 1000,
+            count: 10000,
+            div: 0.2,
             color: 0xffffff,
             opacity: 1,
-            size: 10
+            size: 1
         }
 
         this.init(group)
@@ -23,7 +25,7 @@ export default class{
 
     // create
     create(group){
-        this.object = new Particle({count: this.param.count, posVelocity: {x: 0, y: 1, z: 0}, lifeVelocity: 0.05, materialOpt: {
+        this.object = new Particle({count: this.param.count, posVelocity: {x: 0, y: 1, z: 0}, lifeVelocity: {min: 0.01, max: 0.02}, materialOpt: {
             vertexShader: Shader.vertex,
             fragmentShader: Shader.fragment,
             transparent: true,
@@ -34,7 +36,7 @@ export default class{
             }
         }})
 
-        this.object.setAttribute('aOpacity', new Float32Array(Array.from({length: this.count}, () => this.param.opacity)), 1)
+        this.object.setAttribute('aOpacity', new Float32Array(Array.from({length: this.param.count}, () => this.param.opacity)), 1)
 
         group.add(this.object.get())
     }
@@ -42,42 +44,45 @@ export default class{
 
     // animate
     animate(){
-        // const {posVelocity, lifeVelocity, life} = this.object
-        // const position = this.object.getAttribute('position')
-        // const opacity = this.object.getAttribute('aOpacity')
-        // const positionArr = position.array
-        // const opacityArr = opacity.array
+        const {posVelocity, lifeVelocity, life} = this.object
+        const position = this.object.getAttribute('position')
+        const opacity = this.object.getAttribute('aOpacity')
+        const positionArr = position.array
+        const opacityArr = opacity.array
 
-        // const time = window.performance.now()
+        const time = window.performance.now()
+        const div = this.param.count * this.param.div
 
-        // for(let i = 0; i < this.param.count; i++){
-        //     const idx = i * 3
+        for(let i = 0; i < this.param.count; i++){
+            const idx = i * 3
 
-        //     const ox = positionArr[idx]
-        //     const oz = positionArr[idx + 2]
+            const ox = positionArr[idx]
+            const oz = positionArr[idx + 2]
 
-        //     life[i] -= lifeVelocity
-        //     opacityArr[i] = life[i]
+            opacityArr[i] -= lifeVelocity[i]
 
-        //     const n1 = SIMPLEX.noise3D(ox * 0.01, oz * 0.01, time * 0.001)
-        //     const n2 = SIMPLEX.noise3D(ox * 0.02, oz * 0.02, time * 0.001)
+            const n1 = SIMPLEX.noise2D(i % div * 0.001, time * 0.0005)
+            const n2 = SIMPLEX.noise2D(i % div * 0.002, time * 0.0005)
+            const n3 = SIMPLEX.noise2D(i % div * 0.003, time * 0.0005)
 
-        //     const nx = n1 * 100
-        //     const nz = n2 * 100
+            const nx = n1
+            const ny = PublicMethod.normalize(n2, 0, 1, -1, 1)
+            const nz = n3
 
-        //     if(life[i] < 0){
-        //         positionArr[idx] = 0
-        //         positionArr[idx + 1] = 0
-        //         positionArr[idx + 2] = 0
-        //         life[i] = 1
-        //     }else{
-        //         positionArr[idx] = nx
-        //         positionArr[idx + 1] += posVelocity[i].y
-        //         positionArr[idx + 2] = nz
-        //     }
-        // }
+            positionArr[idx] += nx
+            // positionArr[idx + 1] += posVelocity[i].y
+            positionArr[idx + 1] += ny
+            positionArr[idx + 2] += nz
 
-        // position.needsUpdate = true
-        // opacity.needsUpdate = true
+            if(opacityArr[i] < 0){
+                positionArr[idx] = 0
+                positionArr[idx + 1] = 0
+                positionArr[idx + 2] = 0
+                opacityArr[i] = 1
+            }
+        }
+
+        position.needsUpdate = true
+        opacity.needsUpdate = true
     }
 }

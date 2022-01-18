@@ -14,8 +14,7 @@ export default class{
         }
 
         if(lifeVelocity){
-            this.lifeVelocity = lifeVelocity
-            this.life = Array.from({length: count}, () => 1)
+            this.lifeVelocity = Array.from({length: count}, () => Math.random() * (lifeVelocity.max - lifeVelocity.min) + (lifeVelocity.min))
         }
 
         this.init()
