@@ -79,8 +79,10 @@ export default class{
             opacityArr[i] -= no
 
             if(opacityArr[i] < 0){
-                positionArr[idx] = 0
-                positionArr[idx + 1] = 0
+                const dist = Math.random() * 0.5
+                const theta = Math.random() * 360
+                positionArr[idx] = Math.cos(theta * RADIAN) * dist
+                positionArr[idx + 1] = Math.sin(theta * RADIAN) * dist
                 positionArr[idx + 2] = 0
                 opacityArr[i] = 1
             }
