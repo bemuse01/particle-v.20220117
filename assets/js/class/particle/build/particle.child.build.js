@@ -7,7 +7,7 @@ export default class{
     constructor({group}){
         this.param = {
             count: 10000,
-            div: 0.2,
+            div: 0.05,
             color: 0xffffff,
             opacity: 1,
             size: 1,
@@ -61,20 +61,21 @@ export default class{
 
             const n1 = SIMPLEX.noise2D(i % div * 0.001, time * 0.0005)
             const n2 = SIMPLEX.noise2D(i % div * 0.002, time * 0.0005)
-            const n3 = SIMPLEX.noise2D(i % div * 0.003, time * 0.0005)
+            // const n3 = SIMPLEX.noise2D(i % div * 0.003, time * 0.0005)
             // const n4 = SIMPLEX.noise2D(i % div * 0.004, time * 0.0005)
-            const n4 = SIMPLEX.noise2D(i * 0.004, time * 0.0005)
+            const n4 = SIMPLEX.noise2D(i * 0.004, time * 0.005)
 
 
             const nx = n1 * this.param.rd
-            const ny = PublicMethod.normalize(n2, 0, 1, -1, 1)
-            const nz = n3 * this.param.rd
+            // const ny = n2 * this.param.rd
+            const ny = PublicMethod.normalize(n2, 0, -1, -1, 1)
+            // const nz = n3 * this.param.rd
             const no = PublicMethod.normalize(n4, 0, 0.05, -1, 1)
             // const no = lifeVelocity[i]
 
             positionArr[idx] += nx
             positionArr[idx + 1] += ny
-            positionArr[idx + 2] += nz
+            // positionArr[idx + 2] += nz
 
             opacityArr[i] -= no
 
