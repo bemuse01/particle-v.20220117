@@ -14,7 +14,7 @@ export default {
                 vec4 pos = texture(tPosition, uv);
 
                 newPosition.xyz = pos.xyz;
-                vOpacity = pos.z;
+                vOpacity = pos.w;
 
                 gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
                 gl_PointSize = uSize;
@@ -51,19 +51,19 @@ export default {
 
             float theta = 2.0 * PI * n1;
             float phi = acos(2.0 * n2 - 1.0);
-            float velX = cos(theta) * sin(phi) * 1.0;
-            float velY = sin(theta) * sin(phi) * 1.0;
-            float velZ = cos(phi) * 1.0;
+            float velX = cos(theta) * sin(phi) * 0.5;
+            float velY = sin(theta) * sin(phi) * 0.5;
+            float velZ = cos(phi) * 0.5;
 
             // position
             pos.xyz += vec3(velX, velY, velZ);
 
             // life
-            pos.z -= uLifeVelocity;
+            pos.w -= uLifeVelocity;
 
-            if(pos.z < 0.0){
+            if(pos.w < 0.0){
                 pos.xyz = staticPos.xyz;
-                pos.z = 1.0;
+                pos.w = 1.0;
             }
 
             gl_FragColor = pos;
