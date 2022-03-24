@@ -1,18 +1,25 @@
 import * as THREE from '../../../lib/three.module.js'
 import Particle from '../../objects/particle.js'
 import Shader from '../shader/particle.child.shader.js'
-import PublicMethod from '../../../method/method.js'
+// import PublicMethod from '../../../method/method.js'
+import {GPUComputationRenderer} from '../../../lib/GPUComputationRenderer.js'
+import GPGPUVariable from '../../objects/gpgpuVariable.js'
 
 export default class{
-    constructor({group}){
+    constructor({group, renderer}){
         this.param = {
-            count: 10000,
+            w: 100,
+            h: 100,
             div: 0.05,
             color: 0xffffff,
             opacity: 1,
-            size: 1,
+            size: 10,
             rd: 0.5
         }
+
+        this.count = this.param.w * this.param.h
+
+        this.gpuCompute = new GPUComputationRenderer(this.param.w, this.param.h, renderer)
 
         this.init(group)
     }
@@ -20,76 +27,116 @@ export default class{
 
     // init
     init(group){
+        this.initGPGPU()
         this.create(group)
     }
 
 
+    // gpgpu
+    initGPGPU(){
+        this.createVariable()
+        this.setVariable()
+
+        this.gpuCompute.init()
+    }
+    createVariable(){
+        this.createPositionVariable()
+    }
+    createPositionVariable(){
+        const {texture, staticPosition} = this.createPositionTexture()
+
+        this.positionVariable = new GPGPUVariable({
+            gpuCompute: this.gpuCompute,
+            texture,
+            textureName: 'tPosition',
+            shader: Shader.position,
+            uniforms: {
+                uTime: {value: null},
+                uLifeVelocity: {value: 0.001},
+                staticPosition: {value: staticPosition}
+            }
+        })
+    }
+    createPositionTexture(){
+        const texture = this.gpuCompute.createTexture()
+        const {data, width, height} = texture.image
+
+        const staticPosition = new Float32Array(width * height * 4)
+        
+        for(let j = 0; j < height; j++){
+            for(let i = 0; i < width; i++){
+                const index = (j * width + i) * 4
+
+                // position x
+                data[index + 0] = Math.random()
+                // position y
+                data[index + 1] = Math.random()
+                // position z
+                data[index + 2] = Math.random()
+                // life
+                data[index + 3] = Math.random()
+
+                staticPosition[index + 0] = Math.random()
+                staticPosition[index + 1] = Math.random()
+                staticPosition[index + 2] = Math.random()
+                staticPosition[index + 3] = 0
+            }
+        }
+
+        return {texture, staticPosition: new THREE.DataTexture(staticPosition, width, height, THREE.RGBAFormat, THREE.FloatType)}
+    }
+    setVariable(){
+        this.positionVariable.setDependencies()
+    }
+
+        
+
     // create
     create(group){
-        this.object = new Particle({count: this.param.count, lifeVelocity: {min: 0.01, max: 0.05}, materialOpt: {
-            vertexShader: Shader.vertex,
-            fragmentShader: Shader.fragment,
-            transparent: true,
-            blending: THREE.AdditiveBlending,
-            uniforms: {
-                uColor: {value: new THREE.Color(this.param.color)},
-                uSize: {value: this.param.size},
-                uOpacity: {value: this.param.opacity}
+        this.object = new Particle({
+            count: this.count, 
+            materialOpt: {
+                vertexShader: Shader.draw.vertex,
+                fragmentShader: Shader.draw.fragment,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                uniforms: {
+                    uColor: {value: new THREE.Color(this.param.color)},
+                    uSize: {value: this.param.size},
+                    uOpacity: {value: this.param.opacity},
+                    tPosition: {value: null}
+                }
             }
-        }})
+        })
 
-        this.object.setAttribute('aOpacity', new Float32Array(Array.from({length: this.param.count}, () => 1)), 1)
+        const {uv} = this.createAttribute()
+
+        this.object.setAttribute('uv', new Float32Array(uv), 2)
+        // this.object.setAttribute('aOpacity', new Float32Array(Array.from({length: this.count}, () => 1)), 1)
 
         group.add(this.object.get())
+    }
+    createAttribute(){
+        const uv = []
+
+        for(let i = 0; i < this.param.w; i++){
+            for(let j = 0; j < this.param.h; j++){
+                uv.push(i / this.param.w, j / this.param.h)
+            }
+        }
+
+        return {uv}
     }
 
 
     // animate
     animate(){
-        // const {lifeVelocity} = this.object
-        const position = this.object.getAttribute('position')
-        const opacity = this.object.getAttribute('aOpacity')
-        const positionArr = position.array
-        const opacityArr = opacity.array
+        this.gpuCompute.compute()
 
         const time = window.performance.now()
-        const div = this.param.count * this.param.div
 
-        for(let i = 0; i < this.param.count; i++){
-            const idx = i * 3
+        this.positionVariable.setUniform('uTime', time)
 
-
-            const n1 = SIMPLEX.noise2D(i % div * 0.001, time * 0.0005)
-            const n2 = SIMPLEX.noise2D(i % div * 0.002, time * 0.0005)
-            // const n3 = SIMPLEX.noise2D(i % div * 0.003, time * 0.0005)
-            // const n4 = SIMPLEX.noise2D(i % div * 0.004, time * 0.0005)
-            const n4 = SIMPLEX.noise2D(i * 0.004, time * 0.005)
-
-
-            const nx = n1 * this.param.rd
-            // const ny = n2 * this.param.rd
-            const ny = PublicMethod.normalize(n2, 0, -1, -1, 1)
-            // const nz = n3 * this.param.rd
-            const no = PublicMethod.normalize(n4, 0, 0.05, -1, 1)
-            // const no = lifeVelocity[i]
-
-            positionArr[idx] += nx
-            positionArr[idx + 1] += ny
-            // positionArr[idx + 2] += nz
-
-            opacityArr[i] -= no
-
-            if(opacityArr[i] < 0){
-                const dist = Math.random() * 0.5
-                const theta = Math.random() * 360
-                positionArr[idx] = Math.cos(theta * RADIAN) * dist
-                positionArr[idx + 1] = Math.sin(theta * RADIAN) * dist
-                positionArr[idx + 2] = 0
-                opacityArr[i] = 1
-            }
-        }
-
-        position.needsUpdate = true
-        opacity.needsUpdate = true
+        this.object.setUniform('tPosition', this.gpuCompute.getCurrentRenderTarget(this.positionVariable.get()).texture)
     }
 }

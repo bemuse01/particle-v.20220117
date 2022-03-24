@@ -1,27 +1,72 @@
+import ShaderMethod from '../../../method/method.shader.js'
+
 export default {
-    vertex: `
-        attribute float aOpacity;
+    draw: {
+        vertex: `
+            varying float vOpacity;
 
-        varying float vOpacity;
+            uniform float uSize;
+            uniform sampler2D tPosition;
 
-        uniform float uSize;
+            void main(){
+                vec3 newPosition = position;
+
+                vec4 pos = texture(tPosition, uv);
+
+                newPosition.xyz = pos.xyz;
+                vOpacity = pos.z;
+
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+                gl_PointSize = uSize;
+            }
+        `,
+        fragment: `
+            uniform vec3 uColor;
+            uniform float uOpacity;
+
+            varying float vOpacity;
+
+            void main(){
+                gl_FragColor = vec4(uColor, vOpacity * uOpacity);
+            }
+        `
+    },
+    position: `
+        uniform float uLifeVelocity;
+        uniform float uTime;
+        uniform sampler2D staticPosition;
+
+        const float PI = ${Math.PI};
+
+        ${ShaderMethod.snoise4D()}
 
         void main(){
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            vec2 uv = gl_FragCoord.xy / resolution.xy;
 
-            gl_PointSize = uSize;
+            vec4 pos = texture(tPosition, uv);
+            vec4 staticPos = texture(staticPosition, uv);
 
-            vOpacity = aOpacity;
-        }
-    `,
-    fragment: `
-        uniform vec3 uColor;
-        uniform float uOpacity;
+            float n1 = snoise4D(vec4(pos.xyz, uTime * 0.001));
+            float n2 = snoise4D(vec4(pos.xyz, uTime * 0.001));
 
-        varying float vOpacity;
+            float theta = 2.0 * PI * n1;
+            float phi = acos(2.0 * n2 - 1.0);
+            float velX = cos(theta) * sin(phi) * 1.0;
+            float velY = sin(theta) * sin(phi) * 1.0;
+            float velZ = cos(phi) * 1.0;
 
-        void main(){
-            gl_FragColor = vec4(uColor, vOpacity * uOpacity);
+            // position
+            pos.xyz += vec3(velX, velY, velZ);
+
+            // life
+            pos.z -= uLifeVelocity;
+
+            if(pos.z < 0.0){
+                pos.xyz = staticPos.xyz;
+                pos.z = 1.0;
+            }
+
+            gl_FragColor = pos;
         }
     `
 }

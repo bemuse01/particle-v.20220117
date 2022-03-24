@@ -4,7 +4,9 @@ import PublicMethod from '../../method/method.js'
 import Child from './build/particle.child.build.js'
 
 export default class{
-    constructor(){
+    constructor({app}){
+        this.renderer = app.renderer
+
         this.param = {
             fov: 60,
             near: 0.1,
@@ -76,7 +78,7 @@ export default class{
             const instance = this.modules[module]
             const group = this.group[module]
 
-            this.comp[module] = new instance({group, size: this.size})
+            this.comp[module] = new instance({group, size: this.size, renderer: this.renderer})
         }
     }
 

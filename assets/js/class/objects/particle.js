@@ -49,6 +49,9 @@ export default class{
     setAttribute(name, array, itemSize){
         this.mesh.geometry.setAttribute(name, new THREE.BufferAttribute(array, itemSize))
     }
+    setUniform(name, value){
+        this.mesh.material.uniforms[name].value = value
+    }
 
 
     // get
