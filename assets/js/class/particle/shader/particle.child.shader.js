@@ -32,10 +32,9 @@ export default {
         `
     },
     position: `
-        uniform float uLifeVelocity;
         uniform float uTime;
         uniform float uRand;
-        uniform sampler2D staticPosition;
+        uniform sampler2D lifeVelocity;
 
         const float PI = ${Math.PI};
 
@@ -47,10 +46,10 @@ export default {
             vec2 uv = gl_FragCoord.xy / resolution.xy;
 
             vec4 pos = texture(tPosition, uv);
-            // vec4 staticPos = texture(staticPosition, uv);
+            vec4 lifeVel = texture(lifeVelocity, uv);
 
-            float n1 = snoise4D(vec4(pos.xyz * 0.3, uTime * 0.002));
-            float n2 = snoise4D(vec4(pos.xyz * 0.4, uTime * 0.0025));
+            float n1 = snoise4D(vec4(pos.xyz * 0.4, uTime * 0.001));
+            float n2 = snoise4D(vec4(pos.xyz * 0.5, uTime * 0.001));
 
             float pn1 = executeNormalizing(n1, 0.0, 1.0, -1.0, 1.0);
             float pn2 = executeNormalizing(n2, 0.0, 1.0, -1.0, 1.0);
@@ -67,7 +66,7 @@ export default {
             pos.xyz += vec3(velX, velY, velZ);
 
             // life
-            pos.w -= uLifeVelocity;
+            pos.w -= lifeVel.x;
 
             if(pos.w < 0.0){
                 float x = rand(uv * uRand * 0.1) * 0.2 - 0.1;

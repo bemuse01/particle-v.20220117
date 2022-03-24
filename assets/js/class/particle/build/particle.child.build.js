@@ -9,7 +9,7 @@ export default class{
     constructor({group, renderer}){
         this.param = {
             w: 100,
-            h: 500,
+            h: 100,
             div: 0.05,
             color: 0xffffff,
             opacity: 1,
@@ -43,7 +43,7 @@ export default class{
         this.createPositionVariable()
     }
     createPositionVariable(){
-        const {texture, staticPosition} = this.createPositionTexture()
+        const {texture, lifeVelocity} = this.createPositionTexture()
 
         this.positionVariable = new GPGPUVariable({
             gpuCompute: this.gpuCompute,
@@ -53,8 +53,7 @@ export default class{
             uniforms: {
                 uTime: {value: null},
                 uRand: {value: null},
-                uLifeVelocity: {value: 0.01},
-                staticPosition: {value: staticPosition}
+                lifeVelocity: {value: lifeVelocity}
             }
         })
     }
@@ -62,7 +61,7 @@ export default class{
         const texture = this.gpuCompute.createTexture()
         const {data, width, height} = texture.image
 
-        const staticPosition = new Float32Array(width * height * 4)
+        const lifeVelocity = new Float32Array(width * height * 4)
         
         for(let j = 0; j < height; j++){
             for(let i = 0; i < width; i++){
@@ -77,14 +76,14 @@ export default class{
                 // life
                 data[index + 3] = Math.random()
 
-                staticPosition[index + 0] = THREE.Math.randFloat(0.005, 0.01)
-                staticPosition[index + 1] = 0
-                staticPosition[index + 2] = 0
-                staticPosition[index + 3] = 0
+                lifeVelocity[index + 0] = THREE.Math.randFloat(0.01, 0.02)
+                lifeVelocity[index + 1] = 0
+                lifeVelocity[index + 2] = 0
+                lifeVelocity[index + 3] = 0
             }
         }
 
-        return {texture, staticPosition: new THREE.DataTexture(staticPosition, width, height, THREE.RGBAFormat, THREE.FloatType)}
+        return {texture, lifeVelocity: new THREE.DataTexture(lifeVelocity, width, height, THREE.RGBAFormat, THREE.FloatType)}
     }
     setVariable(){
         this.positionVariable.setDependencies()
